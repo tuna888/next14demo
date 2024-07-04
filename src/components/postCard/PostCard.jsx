@@ -6,11 +6,15 @@ const PostCard = ({ post }) => {
   return (
     <div className={styles.container}>
       <div className={styles.top}>
-        {post.img && (
-          <div className={styles.imgContainer}>
-            <Image src={post.img} alt="" fill className={styles.img} />
-          </div>
-        )}
+        <div className={styles.imgContainer}>
+          <Image
+            src={post.img ? post.img : "/noavatar.png"}
+            alt=""
+            fill
+            className={styles.img}
+          />
+        </div>
+
         <span className={styles.date}>{post.createdAt.slice(0, 10)}</span>
       </div>
       <div className={styles.bottom}>

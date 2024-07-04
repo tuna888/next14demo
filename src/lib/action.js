@@ -1,6 +1,7 @@
 "use server";
+import { revalidatePath } from "next/cache";
 import { signIn, signOut } from "./auth";
-import { User } from "./models";
+import { Post, User } from "./models";
 import { connectToDB } from "./utils";
 import bcrypt from "bcryptjs";
 
@@ -61,5 +62,51 @@ export const login = async (previousState, formData) => {
     }
     // 避免NEXT_REDIRECT错误
     throw err;
+  }
+};
+
+export const addPost = async (prevState, formData) => {
+  const { userId, title, slug, img, desc } = Object.fromEntries(formData);
+
+  try {
+    connectToDB();
+    const post = new Post({
+      userId,
+      title,
+      slug,
+      img,
+      desc,
+    });
+    await post.save();
+    console.log("saved to db");
+    revalidatePath("/blog");
+    revalidatePath("/admin");
+  } catch (err) {
+    console.log(err);
+    return { error: "Something went wrong!" };
+  }
+};
+
+export const addUser = async (prevState, formData) => {
+  const { username, email, password, img, isAdmin } =
+    Object.fromEntries(formData);
+
+  try {
+    connectToDB();
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+    const user = new User({
+      username,
+      email,
+      password: hashedPassword,
+      img,
+      isAdmin,
+    });
+    await user.save();
+    console.log("saved to db");
+    revalidatePath("/admin");
+  } catch (err) {
+    console.log(err);
+    return { error: "Something went wrong!" };
   }
 };
